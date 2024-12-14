@@ -1,4 +1,0 @@
-C:\Users\shaha\source\repos\Final-.NET-MAUI-Location-Tracker\LocationTrackerApp\obj\Debug\net6.0-android\LocationTrackerApp.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\shaha\source\repos\Final-.NET-MAUI-Location-Tracker\LocationTrackerApp\obj\Debug\net6.0-android\LocationTrackerApp.AssemblyInfoInputs.cache
-C:\Users\shaha\source\repos\Final-.NET-MAUI-Location-Tracker\LocationTrackerApp\obj\Debug\net6.0-android\LocationTrackerApp.AssemblyInfo.cs
-C:\Users\shaha\source\repos\Final-.NET-MAUI-Location-Tracker\LocationTrackerApp\obj\Debug\net6.0-android\LocationTrackerApp.csproj.CoreCompileInputs.cache

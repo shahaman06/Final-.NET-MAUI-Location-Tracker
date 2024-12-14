@@ -1,66 +1,75 @@
-﻿using Microsoft.Maui.Controls.Maps;
-using LocationTrackerApp.Data;
-using LocationTrackerApp.Services;
+﻿using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Maps; // For Map and MapSpan
+using Microsoft.Maui.Maps;
+using SQLite;
 
-namespace LocationTrackerApp.Pages;
-
-public partial class MainPage : ContentPage
+namespace LocationTrackerApp.Pages
 {
-    private readonly LocationDatabase _database;
-    private readonly LocationService _locationService;
-
-    public MainPage(LocationDatabase database, LocationService locationService)
+    public partial class MainPage : ContentPage
     {
-        InitializeComponent();
-        _database = database;
-        _locationService = locationService;
+        public MainPage()
+        {
+            InitializeComponent();
+        }
+
+        private async void OnTrackLocationClicked(object sender, EventArgs e)
+        {
+            var deviceLocation = await GetCurrentLocationAsync(); // Using Microsoft.Maui.Devices.Sensors.Location
+            if (deviceLocation != null)
+            {
+                // Show the location on the map
+                map.MoveToRegion(MapSpan.FromCenterAndRadius(
+                    new Microsoft.Maui.Controls.Maps.Position(deviceLocation.Latitude, deviceLocation.Longitude),
+                    Distance.FromMiles(1)));
+
+                // Save the location to the database
+                var locationDatabase = new LocationDatabase("locations.db");
+                await locationDatabase.SaveLocationAsync(new Location
+                {
+                    Latitude = deviceLocation.Latitude,
+                    Longitude = deviceLocation.Longitude,
+                    Timestamp = DateTime.Now
+                });
+            }
+            else
+            {
+                await DisplayAlert("Error", "Unable to get location.", "OK");
+            }
+        }
+
+        public async Task<Microsoft.Maui.Devices.Sensors.Location> GetCurrentLocationAsync()
+        {
+            var location = await Geolocation.GetLastKnownLocationAsync();
+            if (location == null)
+            {
+                location = await Geolocation.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.High));
+            }
+            return location;
+        }
     }
 
-    private async void OnTrackLocationClicked(object sender, EventArgs e)
+    // Location class to represent each location
+    public class Location
     {
-        var location = await _locationService.GetCurrentLocationAsync();
-        if (location != null)
-        {
-            await _database.SaveLocationAsync(new Models.LocationModel
-            {
-                Latitude = location.Latitude,
-                Longitude = location.Longitude,
-                Timestamp = DateTime.Now
-            });
-
-            await DisplayAlert("Success", "Location saved!", "OK");
-        }
-        else
-        {
-            await DisplayAlert("Error", "Unable to get location.", "OK");
-        }
+        [PrimaryKey, AutoIncrement]
+        public int Id { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+        public DateTime Timestamp { get; set; }
     }
 
-    private async void OnShowHeatMapClicked(object sender, EventArgs e)
+    // Database helper class to interact with SQLite
+    public class LocationDatabase
     {
-        HeatMap.IsVisible = true;
+        private readonly SQLiteAsyncConnection _database;
 
-        // Get all saved locations from the database
-        var locations = await _database.GetLocationsAsync();
-        if (locations.Count == 0)
+        public LocationDatabase(string dbPath)
         {
-            await DisplayAlert("No Locations", "No locations to display for the heatmap.", "OK");
-            return;
+            _database = new SQLiteAsyncConnection(dbPath);
+            _database.CreateTableAsync<Location>().Wait();
         }
 
-        // Create a list of location objects for heatmap rendering
-        var locationList = new List<object>();
-        foreach (var loc in locations)
-        {
-            locationList.Add(new
-            {
-                latitude = loc.Latitude,
-                longitude = loc.Longitude
-            });
-        }
-
-        // Call JavaScript to render the heatmap
-        await Browser.EvaluateJavaScriptAsync("renderHeatmap(arguments[0], arguments[1]);", HeatMap, locationList);
-    
+        public Task<List<Location>> GetLocationsAsync() => _database.Table<Location>().ToListAsync();
+        public Task<int> SaveLocationAsync(Location location) => _database.InsertAsync(location);
     }
 }

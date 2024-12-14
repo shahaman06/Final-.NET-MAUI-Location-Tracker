@@ -4,21 +4,18 @@
              xmlns:maps="clr-namespace:Microsoft.Maui.Controls.Maps;assembly=Microsoft.Maui.Controls.Maps"
              x:Class="LocationTrackerApp.Pages.MainPage">
 
-    <!-- Add the WebView to load the map and the heatmap functionality -->
-    <WebView x:Name="HeatMap"
-             IsVisible="False"
-             VerticalOptions="FillAndExpand"
-             HorizontalOptions="FillAndExpand"
-             Source="https://maps.googleapis.com/maps/api/js?key=AIzaSyB--fb9T9ywahydG71P5rQr6h3Uzq4dzgkY&callback=initMap&libraries=visualization"></WebView>
+    <ContentPage.Content>
+        <Grid>
+            <!-- Map for displaying locations -->
+            <maps:Map x:Name="map"
+                VerticalOptions="FillAndExpand"
+                HorizontalOptions="FillAndExpand" />
 
-    <StackLayout>
-        <Label Text="Location Tracker App"
-               FontSize="24"
-               HorizontalOptions="Center"
-               VerticalOptions="Start" />
-        <Button Text="Track Location"
-                Clicked="OnTrackLocationClicked" />
-        <Button Text="Show Heat Map"
-                Clicked="OnShowHeatMapClicked" />
-    </StackLayout>
+            <!-- Button to track location -->
+            <Button Text="Track Location"
+              VerticalOptions="End"
+              HorizontalOptions="Center"
+              Clicked="OnTrackLocationClicked" />
+        </Grid>
+    </ContentPage.Content>
 </ContentPage>
